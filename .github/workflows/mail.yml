@@ -102,7 +102,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./infra/
-          file: ./infra/nginx.Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_gateway:latest
 
