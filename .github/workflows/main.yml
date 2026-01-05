@@ -114,17 +114,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-      - name: Copy docker-compose.production.yml via ssh
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          source: "docker-compose.production.yml"
-          target: "foodgram"
-          overwrite: true
-      - name: Executing remote ssh commands to deploy
+      - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -133,6 +123,48 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd foodgram
+            cat > docker-compose.production.yml << 'EOF'
+            services:
+              db:
+                image: postgres:13.10
+                env_file: .env
+                volumes:
+                  - postgres_data:/var/lib/postgresql/data/
+                restart: always
+
+              backend:
+                image: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
+                env_file: .env
+                volumes:
+                  - static_value:/app/collected_static/
+                  - media_value:/app/media/
+                depends_on:
+                  - db
+                restart: always
+
+              frontend:
+                image: ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
+                volumes:
+                  - frontend_value:/app/result_build/
+
+              gateway:
+                image: ${{ secrets.DOCKER_USERNAME }}/foodgram_gateway:latest
+                ports:
+                  - "80:80"
+                volumes:
+                  - static_value:/var/html/static/
+                  - media_value:/var/html/media/
+                  - frontend_value:/usr/share/nginx/html/
+                depends_on:
+                  - backend
+                restart: always
+
+            volumes:
+              postgres_data:
+              static_value:
+              media_value:
+              frontend_value:
+            EOF
             sudo docker compose -f docker-compose.production.yml pull
             sudo docker compose -f docker-compose.production.yml down
             sudo docker compose -f docker-compose.production.yml up -d
