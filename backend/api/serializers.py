@@ -1,9 +1,12 @@
-from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerializer
+from djoser.serializers import (
+    UserCreateSerializer as DjoserUserCreateSerializer
+)
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from rest_framework import serializers
 
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                             ShoppingCart, Tag)
+from recipes.models import (
+    Favorite, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag
+)
 from users.models import Subscription, User
 
 from .fields import Base64ImageField
@@ -280,7 +283,9 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError('Нужен хотя бы один тег.')
         if len(value) != len(set(value)):
-            raise serializers.ValidationError('Теги не должны повторяться.')
+            raise serializers.ValidationError(
+                'Теги не должны повторяться.'
+            )
         return value
 
     def create_ingredients(self, recipe, ingredients_data):
