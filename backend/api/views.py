@@ -8,16 +8,23 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                             ShoppingCart, Tag)
+from recipes.models import (
+    Favorite, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag
+)
 from users.models import Subscription, User
 
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (AvatarSerializer, IngredientSerializer,
-                          RecipeCreateUpdateSerializer, RecipeMinifiedSerializer,
-                          RecipeReadSerializer, SubscriptionSerializer,
-                          TagSerializer, UserSerializer)
+from .serializers import (
+    AvatarSerializer,
+    IngredientSerializer,
+    RecipeCreateUpdateSerializer,
+    RecipeMinifiedSerializer,
+    RecipeReadSerializer,
+    SubscriptionSerializer,
+    TagSerializer,
+    UserSerializer
+)
 from .utils import generate_short_link
 
 
@@ -161,7 +168,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def get_link(self, request, pk=None):
         recipe = self.get_object()
-        short_link = f'https://{request.get_host()}/s/{recipe.short_link}'
+        host = request.get_host()
+        short_link = f'https://{host}/s/{recipe.short_link}'
         return Response(
             {'short-link': short_link},
             status=status.HTTP_200_OK
