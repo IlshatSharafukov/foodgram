@@ -18,8 +18,9 @@ services:
 
   frontend:
     image: sharafukov/foodgram_frontend:latest
+    command: cp -r /app/build/. /frontend_static/
     volumes:
-      - frontend_value:/app/result_build/
+      - frontend_value:/frontend_static
 
   gateway:
     image: sharafukov/foodgram_gateway:latest
