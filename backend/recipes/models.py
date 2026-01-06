@@ -3,6 +3,11 @@ from django.db import models
 
 from users.models import User
 
+from .constants import (MAX_LENGTH_MEASUREMENT_UNIT, MAX_LENGTH_NAME_INGREDIENT,
+                        MAX_LENGTH_NAME_RECIPE, MAX_LENGTH_NAME_TAG,
+                        MAX_LENGTH_SHORT_LINK, MAX_LENGTH_SLUG,
+                        MIN_COOKING_TIME, MIN_INGREDIENT_AMOUNT)
+
 
 class Tag(models.Model):
     """
@@ -10,12 +15,12 @@ class Tag(models.Model):
     """
 
     name = models.CharField(
-        max_length=32,
+        max_length=MAX_LENGTH_NAME_TAG,
         unique=True,
         verbose_name='Название'
     )
     slug = models.SlugField(
-        max_length=32,
+        max_length=MAX_LENGTH_SLUG,
         unique=True,
         verbose_name='Slug'
     )
@@ -35,11 +40,11 @@ class Ingredient(models.Model):
     """
 
     name = models.CharField(
-        max_length=128,
+        max_length=MAX_LENGTH_NAME_INGREDIENT,
         verbose_name='Название'
     )
     measurement_unit = models.CharField(
-        max_length=64,
+        max_length=MAX_LENGTH_MEASUREMENT_UNIT,
         verbose_name='Единица измерения'
     )
 
@@ -70,7 +75,7 @@ class Recipe(models.Model):
         verbose_name='Автор'
     )
     name = models.CharField(
-        max_length=256,
+        max_length=MAX_LENGTH_NAME_RECIPE,
         verbose_name='Название'
     )
     image = models.ImageField(
@@ -90,11 +95,11 @@ class Recipe(models.Model):
         verbose_name='Теги'
     )
     cooking_time = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1)],
+        validators=[MinValueValidator(MIN_COOKING_TIME)],
         verbose_name='Время приготовления (мин)'
     )
     short_link = models.CharField(
-        max_length=10,
+        max_length=MAX_LENGTH_SHORT_LINK,
         unique=True,
         blank=True,
         null=True,
@@ -131,7 +136,7 @@ class RecipeIngredient(models.Model):
         verbose_name='Ингредиент'
     )
     amount = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1)],
+        validators=[MinValueValidator(MIN_INGREDIENT_AMOUNT)],
         verbose_name='Количество'
     )
 
@@ -149,27 +154,38 @@ class RecipeIngredient(models.Model):
         return f'{self.ingredient} в {self.recipe}'
 
 
-class Favorite(models.Model):
+class UserRecipeBaseModel(models.Model):
     """
-    Модель избранного.
+    Базовая модель для связи пользователя и рецепта.
     """
 
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='favorites',
         verbose_name='Пользователь'
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='favorited_by',
         verbose_name='Рецепт'
     )
 
     class Meta:
+        abstract = True
+
+    def __str__(self):
+        return f'{self.user} - {self.recipe}'
+
+
+class Favorite(UserRecipeBaseModel):
+    """
+    Модель избранного.
+    """
+
+    class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
+        default_related_name = 'favorites'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
@@ -181,27 +197,15 @@ class Favorite(models.Model):
         return f'{self.user} добавил {self.recipe} в избранное'
 
 
-class ShoppingCart(models.Model):
+class ShoppingCart(UserRecipeBaseModel):
     """
     Модель списка покупок.
     """
 
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='shopping_cart',
-        verbose_name='Пользователь'
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='in_shopping_cart',
-        verbose_name='Рецепт'
-    )
-
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+        default_related_name = 'shopping_cart'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
