@@ -3,10 +3,16 @@ from django.db import models
 
 from users.models import User
 
-from .constants import (MAX_LENGTH_MEASUREMENT_UNIT, MAX_LENGTH_NAME_INGREDIENT,
-                        MAX_LENGTH_NAME_RECIPE, MAX_LENGTH_NAME_TAG,
-                        MAX_LENGTH_SHORT_LINK, MAX_LENGTH_SLUG,
-                        MIN_COOKING_TIME, MIN_INGREDIENT_AMOUNT)
+from .constants import (
+    MAX_LENGTH_MEASUREMENT_UNIT,
+    MAX_LENGTH_NAME_INGREDIENT,
+    MAX_LENGTH_NAME_RECIPE,
+    MAX_LENGTH_NAME_TAG,
+    MAX_LENGTH_SHORT_LINK,
+    MAX_LENGTH_SLUG,
+    MIN_COOKING_TIME,
+    MIN_INGREDIENT_AMOUNT
+)
 
 
 class Tag(models.Model):
